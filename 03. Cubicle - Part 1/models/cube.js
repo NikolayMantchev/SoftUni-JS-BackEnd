@@ -44,7 +44,7 @@ class cubeModel {
         return this._write(newData,updatedEntity);
     }
     delete(cubeId){
-        const deletedCube = this.getOne(cubeId);
+        const deletedCube = +this.getOne(cubeId);
         const newData = {
             lastIdx:this.data.lastIdx,
             entities:this.data.entities.filter(({id:i})=>i !== cubeId)
@@ -52,10 +52,10 @@ class cubeModel {
         return this._write(newData,deletedCube);
     }
     getOne(cubeId){
-        return Promise.resolve(this.data.entities.find(({id:i})=>i === cubeId));
+        return Promise.resolve(this.data.find(({id:i})=>i === cubeId));
     }
     getAll(){
-        return Promise.resolve(this.data.entities);
+        return Promise.resolve(this.data);
     }
 }
 module.exports = new cubeModel();

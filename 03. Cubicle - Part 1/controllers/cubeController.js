@@ -7,9 +7,9 @@ function index(req,res,next){
 }
 
 function details(req,res,next){
-    const id = req.params.id;
+    const id = +req.params.id;
     cubeModel.getOne(id).then(cube=>{
-        res.render('detais.hbs',{cube});
+        res.render('details.hbs',{cube});
     }).catch(next);
 }
 function about(req,res,next){
