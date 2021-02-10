@@ -1,16 +1,18 @@
 const express = require('express');
 const path = require('path');
 const handlebars = require('express-handlebars');
+const cookieParser = require('cookie-parser');
+const auth = require('../middlewares/auth');
+
 
 module.exports = (app) => {
 
-    app.engine('.hbs',handlebars({extname:'.hbs',defaultLayout:false}));
+    app.engine('.hbs',handlebars({extname:'.hbs'}));
     app.set('view engine', '.hbs');
-
+    app.use(cookieParser())
     app.use(express.urlencoded({ extended: true }));
+    
+    app.use(express.static("static"));
 
-    const staticFilePath = path.join(__dirname, 'static');
-
-    app.use(express.static(staticFilePath));
 
 };

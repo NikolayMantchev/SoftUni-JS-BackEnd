@@ -5,8 +5,7 @@ const { jwtSecret } = config;
 
 module.exports = function auth(req,res,next){
   const token= req.cookies[config.authCookie];
- 
-  // console.log("here  : " + req.cookies[config.authCookie].toString());
+ if(!token){next();return;};
   const data = jwt.verify(token,config.jwtSecret,(err,decoded)=>{
     if(err){
       res.redirect('/login');
@@ -16,11 +15,14 @@ module.exports = function auth(req,res,next){
   });
   user.findById(data.id).then(user=>{   
   req.user = user;
+  res.locals.isLogged = !!req.user;
+  res.locals.username = req.user.username;
   next();
   }).catch(err =>{
     if(err)
     {
-    res.redirect('./login');
+      res.redirect('/login');
+      
     }
   })
   

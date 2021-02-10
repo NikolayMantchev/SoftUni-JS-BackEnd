@@ -1,61 +1,11 @@
-const { json } = require('body-parser');
-const fs = require('fs');
-const path = require('path');
+const mongoose = require('mongoose');
 
-class cubeModel {
-    constructor()
-    {this.data = require('../config/database.json')};
-
-    _write(newData,resolveData){
-        return new Promise((resolve,reject)=>{
-            fs.writeFile(path.resolve('../config/database.json'),JSON.stringify(newData),(err)=>{
-                if(err){reject(err);return;}
-                this.data = newData;
-                resolve(resolveData);
-            });
-        });
-    }
-    create(name,description,imageUrl,difficultyLevel)
-    {
-        return {name,description,imageUrl,difficultyLevel}
-    }
-
-    insert(newCube){
-        const newIdx = this.data.lastIndex++;
-        newCube = {id:newIdx,...newCube};
-        const newData = {
-            lastIndex:newIdx,
-            entities:this.data.entities.concat(newCube)
-        };
-       return this._write(newData,newCube);
-    }
-    update(cubeId,updates){
-        const entityIdx = this.data.entities.findIndex(({id})=>id===cubeId);
-        const entity = this.data.entities[entityIdx];
-        const updatedEntity = {...entity,...updates};
-        const newData = {
-            lastIdx:this.data.lastIdx,
-            entities:[
-                ...this.data.entities.slice(0,entityIdx),
-                updatedEntity,
-                ...this.data.entities.slice(entityIdx+1)
-            ]
-        };
-        return this._write(newData,updatedEntity);
-    }
-    delete(cubeId){
-        const deletedCube = +this.getOne(cubeId);
-        const newData = {
-            lastIdx:this.data.lastIdx,
-            entities:this.data.entities.filter(({id:i})=>i !== cubeId)
-        };
-        return this._write(newData,deletedCube);
-    }
-    getOne(cubeId){
-        return Promise.resolve(this.data.find(({id:i})=>i === cubeId));
-    }
-    getAll(){
-        return Promise.resolve(this.data);
-    }
-}
-module.exports = new cubeModel();
+const cubeModel = new mongoose.Schema({
+    name:{ type: String,required:true},
+    imageUrl:{type:String,required:true},
+    description:{type:String,required:true},
+    difficultyLevel:{type:Number,min:1,max:5},
+    creatorId:{type: String, required:true },
+    accessories: [{type: mongoose.Types.ObjectId, ref:'Accessory'}]
+});
+module.exports = new mongoose.model('Cube',cubeModel)

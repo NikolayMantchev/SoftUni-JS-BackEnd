@@ -19,7 +19,6 @@ function getAttachAccessory(req,res,next){
         accessoryModel.find({ cubes: { $nin: cubeId } })
     ])
     .then(([cube,accessories])=>{
-        console.log("here => " + cube);
         res.render('attachAccessory.hbs',{
             cube,
             accessories
@@ -30,7 +29,6 @@ function getAttachAccessory(req,res,next){
 function postAttachAccessory(req,res,next){
    const cubeId = req.params.id;
    const accessoryId = req.body.accessory;
-   console.log(cubeId);
 
    Promise.all([
    cubeModel.update({_id:cubeId},{$push:{accessories:accessoryId}}),
@@ -42,4 +40,8 @@ function postAttachAccessory(req,res,next){
    .catch(next)
 }
 
-module.exports = {postCreateAccessory,getCreateAccessory,getAttachAccessory,postAttachAccessory}
+module.exports = {
+    postCreateAccessory,
+    getCreateAccessory,
+    getAttachAccessory,
+    postAttachAccessory}

@@ -10,15 +10,36 @@ function getRegister(req,res,next) {
 }
 
 function postRegister(req,res,next) {
-    const { username, password, repeatPassword } = req.body;
+    const { username,email, password, repeatPassword } = req.body;
+
     if (password !== repeatPassword) {
-      res.render('register', { err: 'Passwords don\'t match!' });
+      res.render('registerPage.hbs', { err: 'Passwords and repeat-Password don\'t match!' });
       return;
     }
-
-    userModel.create({ username, password })
-      .then(() => { res.redirect('/login'); })
-      .catch(next);
+    let err = {messages:[]};
+   if(username.length<4){
+       err.messages.push("Username must be at least 4 charackters!");
+   }
+   if(password.length < 6 || password.length > 18){
+       err.messages.push("Password must be between 6 and 18 charackters!");
+   }
+    
+    userModel.exists({username:username})
+    .then(exists=>{
+        if(exists){
+             err.messages.push('Username already exists!');
+        }
+        if(err.messages.length>0){
+            res.render('registerPage.hbs',err);   
+            return;
+        }
+        userModel.create({ username,email, password })
+    .then(() => { 
+        res.redirect('/login');
+        return;
+     })
+    .catch(next);    
+    }) 
   } 
  
 function getLogin(req,res,next) {
@@ -29,20 +50,24 @@ function postLogin(req,res,next) {
      userModel.findOne({username:username})
      .then(user=>{
          if(!user){
-             return res.redirect('/login',{err:'User not found'})
+             return res.render('loginPage.hbs',{err:'User not found'})
          }
          else
          {
-             const validPass = bcrypt.compare(password,user.password);
-             if(!validPass){return res.redirect('/login',{err:"Invalid Password!"})}
-             const token = jwt.sign({id:user._id},config.jwtSecret);
-             console.log("Loged In!");
-             res.cookie(config.authCookie,token).redirect('/');
+            bcrypt.compare(password,user.password)
+            .then(match=>{
+                if(!match){ res.render('loginPage.hbs',{err:"Invalid Username or Password!"}); return;}
+                const token = jwt.sign({id:user._id},config.jwtSecret);
+                console.log("Loged In!");
+                res.cookie(config.authCookie,token).redirect('/');
+            });
+            
          }
      }).catch(next);
 }
 function logout(req,res,next){
     res.clearCookie(config.authCookie);
+    console.log('logged out!');
     res.redirect('/');
 }
 
